@@ -32,8 +32,9 @@ import subprocess
 import modal
 
 APP_NAME = "meta-aira-glimmer"
-MODEL_ID = os.environ.get("GLIMMER_MODEL_ID", "meta-models/Muse-Glimmer-30B")
-MODEL_REVISION = os.environ.get("GLIMMER_MODEL_REVISION", "main")  # pin a commit sha for the demo
+# Pinned: the second reader is an integrity control, so its weights must not change underneath us.
+MODEL_ID = "meta-models/Muse-Glimmer-30B"
+MODEL_REVISION = "cec94fcfd6512f2cfe708138c32533b346ea4f69"  # HF commit of 2026-10-22
 SERVED_NAME = "muse-glimmer-30b"
 GPU = os.environ.get("GLIMMER_GPU", "H100")  # or "A100-80GB"
 VLLM_VERSION = os.environ.get("GLIMMER_VLLM_VERSION", "0.11.0")  # bump if the model needs a newer vLLM

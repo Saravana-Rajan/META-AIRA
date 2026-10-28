@@ -21,6 +21,8 @@ from aira.session import AgentFactory, Session, SessionClosed, TranscriberFactor
 
 log = logging.getLogger(__name__)
 
+HELLO_TIMEOUT_S = 10.0
+
 STATIC_APP = Path(__file__).resolve().parent.parent / "static" / "app"
 HEARTBEAT_S = 15.0
 POLL_S = 1.0
@@ -180,7 +182,14 @@ def create_app(
         st.hub.sessions.add(session)
         try:
             while True:
-                raw = await ws.receive_text()
+                if session.authed:
+                    raw = await ws.receive_text()
+                else:  # the service is publicly reachable: unauthenticated sockets get 10 s to say hello
+                    try:
+                        raw = await asyncio.wait_for(ws.receive_text(), HELLO_TIMEOUT_S)
+                    except TimeoutError:
+                        await ws.close(code=1008, reason="hello timeout")
+                        return
                 try:
                     data = json.loads(raw)
                     if not isinstance(data, dict):
