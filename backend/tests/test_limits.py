@@ -30,6 +30,19 @@ def test_socket_cap(monkeypatch):
     assert g.open_socket("x")
 
 
-def test_client_ip_prefers_forwarded_for():
-    assert client_ip({"x-forwarded-for": "9.9.9.9, 10.0.0.1"}, "10.0.0.1") == "9.9.9.9"
+def test_client_ip_uses_rightmost_hop_and_rejects_junk():
+    # A caller can prepend anything; Cloud Run appends the real address last.
+    assert client_ip({"x-forwarded-for": "6.6.6.6, 9.9.9.9"}, "10.0.0.1") == "9.9.9.9"
+    assert client_ip({"x-forwarded-for": "spoof-me"}, "10.0.0.1") == "10.0.0.1"
     assert client_ip({}, "127.0.0.1") == "127.0.0.1"
+    assert client_ip({}, None) == "unknown"
+
+
+def test_tracked_clients_are_bounded(monkeypatch):
+    monkeypatch.setattr(limits, "MAX_TRACKED_CLIENTS", 2)
+    now = [0.0]
+    g = SpendGuard(clock=lambda: now[0])
+    assert g.allow_turn("1.1.1.1") and g.allow_turn("2.2.2.2")
+    assert not g.allow_turn("3.3.3.3")  # full of active callers
+    now[0] = 3601  # both idle for an hour -> evicted
+    assert g.allow_turn("3.3.3.3")
