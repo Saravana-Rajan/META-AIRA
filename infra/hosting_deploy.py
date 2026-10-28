@@ -31,6 +31,11 @@ CONFIG = {
 }
 
 
+# A personal gcloud login needs a quota project header; a service-account token (CI) does not,
+# and sending it there would require an extra serviceusage permission.
+USER_LOGIN = "HOSTING_TOKEN" not in os.environ
+
+
 def token() -> str:
     t = os.environ.get("HOSTING_TOKEN")
     if t:
@@ -44,7 +49,8 @@ def call(method: str, url: str, tok: str, body: bytes | dict | None = None, ctyp
     data = json.dumps(body).encode() if isinstance(body, dict) else body
     req = urllib.request.Request(url, data=data, method=method)
     req.add_header("Authorization", f"Bearer {tok}")
-    req.add_header("x-goog-user-project", PROJECT)
+    if USER_LOGIN:
+        req.add_header("x-goog-user-project", PROJECT)
     if data is not None:
         req.add_header("Content-Type", ctype)
     with urllib.request.urlopen(req, timeout=120) as r:
