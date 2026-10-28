@@ -73,4 +73,9 @@ def no_results(say_en: str, **facts: Any) -> dict:
 
 def obj(properties: dict, required: list[str] | None = None) -> dict:
     """JSON schema helper for tool parameters."""
-    return {"type": "object", "properties": properties, "required": required or [], "additionalProperties": False}
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": required or [],
+        "additionalProperties": False,
+    }
