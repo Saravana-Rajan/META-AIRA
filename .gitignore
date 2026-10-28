@@ -12,3 +12,4 @@ dist/
 .firebase/
 *.log
 .claude/
+.playwright-mcp/

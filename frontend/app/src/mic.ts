@@ -11,7 +11,11 @@ export class Mic {
   private starting: Promise<void> | null = null;
   private streaming = false;
 
-  constructor(private readonly onChunk: (pcm24b64: string) => void) {}
+  constructor(
+    private readonly onChunk: (pcm24b64: string) => void,
+    /** Optional loudness of each streamed chunk, 0..1 (drives the voice orb). */
+    private readonly onLevel?: (level: number) => void,
+  ) {}
 
   get ready(): boolean {
     return this.node !== null;
@@ -48,6 +52,7 @@ export class Mic {
     node.port.onmessage = (e: MessageEvent) => {
       if (!this.streaming || !(e.data instanceof ArrayBuffer)) return;
       this.onChunk(bytesToBase64(new Uint8Array(e.data)));
+      if (this.onLevel) this.onLevel(chunkLevel(e.data));
     };
     // Some engines only pull a node that reaches the destination: route through a muted gain.
     const sink = ctx.createGain();
@@ -66,6 +71,7 @@ export class Mic {
   setStreaming(on: boolean): void {
     if (on === this.streaming) return;
     this.streaming = on;
+    if (!on) this.onLevel?.(0);
     this.node?.port.postMessage({ enabled: on });
   }
 
@@ -77,4 +83,16 @@ export class Mic {
     this.node = null;
     this.stream = null;
   }
+}
+
+/** RMS of a PCM16 LE chunk, scaled so normal speech lands around 0.3..0.8. */
+function chunkLevel(buf: ArrayBuffer): number {
+  const pcm = new Int16Array(buf);
+  if (pcm.length === 0) return 0;
+  let sum = 0;
+  for (let i = 0; i < pcm.length; i++) {
+    const v = (pcm[i] ?? 0) / 32768;
+    sum += v * v;
+  }
+  return Math.min(1, Math.sqrt(sum / pcm.length) * 6);
 }

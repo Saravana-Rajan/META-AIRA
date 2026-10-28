@@ -37,8 +37,10 @@ The mic, camera and AudioWorklet need a **secure context** (HTTPS, or `localhost
 | Screen reader double-tap / Enter / Space | Same as double tap |
 | Escape | Stop |
 
-On a confirmation, a full-screen **Yes / No** screen appears (it is also announced). Saying "yes" works too, because the agent handles it.
-"Type instead" at the bottom sends `{type:"text"}`, for demos and as an accessibility fallback.
+Flow: **Tap to start** (picks the language, TalkBack mode and the helper camera view; this tap unlocks audio, speech, mic and camera) -> **device check** (mic hears a voice, camera picture is not black; done on the phone, nothing is sent) -> **voice screen** (status chip, voice orb, caption card "You" / "AIRA", task card, gesture hint).
+
+On a confirmation, the task card turns orange and a **Yes / No** sheet appears (it is also announced). While it is open, double-tap = yes and long-press = no. Saying "yes" works too, because the agent handles it.
+The helper row at the bottom (language, "Type", "Show camera") is real buttons outside the gesture surface. "Type" sends `{type:"text"}`, for demos and as an accessibility fallback.
 
 ## Files
 - `src/contracts.ts`: TS mirror of `contracts.py` plus `parseInbound` (fills pydantic defaults).
@@ -47,6 +49,7 @@ On a confirmation, a full-screen **Yes / No** screen appears (it is also announc
 - `src/speech.ts`: speechSynthesis voice selection (ta-IN / hi-IN / en-IN with fallbacks). Splits text into sentences to work around Chrome's cut-off. Has a watchdog for engines that never fire `onend`, plus cancel.
 - `src/camera.ts`: rear camera, started on the first gesture. Captures JPEGs on `request_frame` (max side 768 px, quality 0.8, OffscreenCanvas with a canvas fallback).
 - `src/cues.ts`: WebAudio earcons and vibration patterns for `ack/thinking/done/warn/match/mismatch/unsure` and local cues.
+- `src/check.ts`: the local start-up device check. `src/orb.ts`: the voice orb (SVG rings + spark, swells with mic level).
 - `src/gestures.ts`: double-tap, long-press and single-tap detection, plus screen-reader and keyboard mapping.
 - `src/i18n.ts`: UI strings in en/ta/hi, with the language persisted.
-- `public/sw.js`: offline shell (network-first pages, stale-while-revalidate assets; never touches the WS). `public/manifest.webmanifest`, icons (`npm run icons` regenerates the PNGs).
+- `public/sw.js`: offline shell (network-first pages, stale-while-revalidate assets; never touches the WS). `public/manifest.webmanifest`, icons in `public/icons/` (the AIRA logo).

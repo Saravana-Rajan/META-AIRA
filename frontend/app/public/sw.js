@@ -1,7 +1,7 @@
 /* AIRA offline shell: network-first for pages, stale-while-revalidate for same-origin static assets.
  * Never touches the WebSocket or any cross-origin request. */
-const CACHE = "aira-shell-v1";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./pcm-worklet.js"];
+const CACHE = "aira-shell-v2";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/aira-logo-192.png", "./icons/aira-logo-512.png", "./icons/apple-touch-icon.png", "./pcm-worklet.js"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

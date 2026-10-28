@@ -3,70 +3,162 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="color-scheme" content="light" />
     <meta name="description" content="AIRA: voice-first shop assistant for blind shop owners" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="AIRA" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="icon" type="image/png" href="./icons/aira-logo-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap"
+    />
     <title>AIRA</title>
   </head>
   <body>
-    <div id="app">
-      <header class="bar">
-        <div class="conn" id="conn">
-          <span class="dot" aria-hidden="true"></span>
-          <span id="conn-text">Connecting</span>
-          <span id="mock" class="badge" hidden>Demo</span>
-        </div>
-        <label class="lang">
-          <span class="sr-only">Language</span>
-          <select id="lang">
-            <option value="en">English</option>
-            <option value="ta">தமிழ்</option>
-            <option value="hi">हिन्दी</option>
-          </select>
-        </label>
-      </header>
+    <!-- 1. Start: one big tap that unlocks audio, speech, mic and camera. -->
+    <main id="welcome" class="welcome">
+      <div class="col welcome-col">
+        <header class="welcome-head">
+          <img class="logo logo--sm" src="./icons/aira-logo-192.png" alt="" width="40" height="40" />
+          <h1 class="welcome-name">AIRA</h1>
+        </header>
 
-      <button id="pad" class="pad" type="button" aria-label="AIRA. Double tap to talk. Long press to stop.">
-        <span class="pad-state" id="pad-state" aria-hidden="true">Double tap to talk</span>
-        <span class="pad-hint" id="pad-hint" aria-hidden="true">Double tap to talk. Long press to stop.</span>
+        <button id="start" class="start" type="button" aria-labelledby="start-label" aria-describedby="start-hint">
+          <span class="start-orb" data-orb aria-hidden="true"></span>
+          <span id="start-label" class="start-label">Tap to start</span>
+          <span id="start-hint" class="start-hint">Turns on the microphone and camera.</span>
+        </button>
+
+        <div class="row langs">
+          <span class="row-text">
+            <span class="row-label" id="lang-label">Language</span>
+            <span class="row-hint" id="lang-hint">AIRA listens and answers in this language.</span>
+          </span>
+          <div class="seg" role="radiogroup" aria-labelledby="lang-label" aria-describedby="lang-hint" id="lang-seg"></div>
+        </div>
+
+        <label class="row switch">
+          <input id="opt-sr" class="switch-input" type="checkbox" role="switch" />
+          <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+          <span class="row-text">
+            <span class="row-label" id="sr-label">I use TalkBack</span>
+            <span class="row-hint" id="sr-hint">AIRA's messages go to TalkBack.</span>
+          </span>
+        </label>
+
+        <label class="row switch">
+          <input id="opt-cam" class="switch-input" type="checkbox" role="switch" />
+          <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+          <span class="row-text">
+            <span class="row-label" id="cam-label">Show camera</span>
+            <span class="row-hint" id="cam-hint">A small camera view of what AIRA sees, for a helper.</span>
+          </span>
+        </label>
+      </div>
+    </main>
+
+    <!-- 2. Device check: microphone and camera, checked on the phone itself. -->
+    <main id="check" class="check" hidden>
+      <div class="col check-col">
+        <header class="check-head">
+          <img class="logo logo--sm" src="./icons/aira-logo-192.png" alt="" width="40" height="40" />
+          <h1 class="check-title" id="check-title">Checking your microphone and camera</h1>
+        </header>
+        <p class="check-line" id="check-line" aria-live="polite"></p>
+        <ol class="steps">
+          <li class="step" id="step-mic" data-step="waiting">
+            <div class="step-row"><span class="step-name" id="step-mic-name">Microphone</span><span class="pill" id="step-mic-pill">Waiting</span></div>
+            <div class="meter" aria-hidden="true"><span id="mic-meter"></span></div>
+            <p class="step-detail" id="step-mic-detail"></p>
+          </li>
+          <li class="step" id="step-cam" data-step="waiting">
+            <div class="step-row"><span class="step-name" id="step-cam-name">Camera</span><span class="pill" id="step-cam-pill">Waiting</span></div>
+            <div class="peek" id="cam-peek" aria-hidden="true"></div>
+            <p class="step-detail" id="step-cam-detail"></p>
+          </li>
+        </ol>
+        <button id="check-retry" class="btn-dark" type="button" hidden>Try again</button>
+        <button id="check-go" class="go" type="button" hidden>
+          <span class="go-label" id="check-go-label">Start talking</span>
+          <span class="go-hint" id="check-go-hint">Double-tap anywhere to talk. Long-press to stop.</span>
+        </button>
+        <button id="check-skip" class="btn-ghost" type="button">Continue without the check</button>
+      </div>
+    </main>
+
+    <!-- 3. The voice screen: one full-screen gesture surface. -->
+    <div id="app" class="app" hidden>
+      <button id="pad" class="pad" type="button" aria-label="AIRA. Double-tap to talk. Long-press to stop.">
+        <span class="col screen" id="screen" data-status="connecting">
+          <span class="bar">
+            <img class="logo" src="./icons/aira-logo-192.png" alt="" width="44" height="44" />
+            <span class="chip" id="chip"><span class="chip-dot" aria-hidden="true"></span><span id="chip-text">Connecting</span><span id="mock" class="chip-tag" hidden>Demo</span></span>
+          </span>
+
+          <span class="cam-card" id="cam-card" hidden>
+            <video id="cam" class="cam-video" aria-hidden="true" muted playsinline autoplay></video>
+            <span class="cam-badge"><span class="cam-dot"></span><span id="cam-badge-text">Camera</span></span>
+          </span>
+
+          <span class="stage" data-orb aria-hidden="true"></span>
+
+          <span class="caps caps--empty" id="caps" aria-hidden="true">
+            <span class="cap-hint" id="cap-hint">Double-tap anywhere to talk. Long-press to stop.</span>
+            <span class="cap cap--user" id="cap-user-wrap" hidden><span class="cap-who" id="who-you">You</span><span class="cap-text" id="cap-user"></span></span>
+            <span class="cap cap--aira" id="cap-aira-wrap" hidden><span class="cap-who" id="who-aira">AIRA</span><span class="cap-text" id="cap-aira"></span></span>
+          </span>
+
+          <span class="task" id="task" data-tone="neutral" hidden>
+            <span class="task-mark"><svg class="task-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path id="task-icon" d="" /></svg></span>
+            <span class="task-body">
+              <span class="task-title" id="task-title"></span>
+              <span class="task-detail" id="task-detail"></span>
+              <span class="task-bar" id="task-bar" hidden><span class="task-fill" id="task-fill"></span></span>
+              <span class="task-hint" id="task-hint" hidden></span>
+            </span>
+          </span>
+
+          <span class="foot-hint" id="foot-hint" hidden>Double-tap anywhere to talk. Long-press to stop.</span>
+        </span>
       </button>
 
-      <section class="captions" aria-label="Conversation">
-        <p class="cap cap-user" id="cap-user"></p>
-        <p class="cap cap-aira" id="cap-aira"></p>
-        <p class="cap-meta" id="cap-meta"></p>
-      </section>
-
-      <video id="cam" class="cam" aria-hidden="true" muted playsinline autoplay></video>
-
-      <details class="type" id="type">
-        <summary id="type-summary">Type instead</summary>
-        <form id="type-form" autocomplete="off">
-          <label for="type-input" class="sr-only">Message to AIRA</label>
-          <input id="type-input" type="text" enterkeyhint="send" />
-          <button type="submit" id="type-send">Send</button>
-        </form>
-      </details>
-
-      <div id="confirm" class="confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-prompt" hidden>
-        <h2 id="confirm-title">Confirm</h2>
-        <p id="confirm-prompt"></p>
-        <div class="confirm-buttons">
-          <button type="button" id="confirm-yes" class="yes">Yes</button>
-          <button type="button" id="confirm-no" class="no">No</button>
-        </div>
+      <!-- Helper controls for a sighted helper: real buttons outside the gesture surface. -->
+      <div class="tools" id="tools">
+        <label class="tool tool--lang">
+          <span class="sr-only" id="tool-lang-label">Language</span>
+          <select id="lang"></select>
+        </label>
+        <span class="tools-gap"></span>
+        <button type="button" class="tool" id="type-toggle" aria-expanded="false" aria-controls="type-form">Type</button>
+        <button type="button" class="tool" id="cam-toggle" aria-pressed="false">Show camera</button>
       </div>
 
-      <div id="announce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
-      <div id="status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+      <form id="type-form" class="sheet type-sheet" autocomplete="off" hidden>
+        <label for="type-input" class="sr-only" id="type-label">Message to AIRA</label>
+        <input id="type-input" type="text" enterkeyhint="send" placeholder="Type a message" />
+        <button type="submit" id="type-send" class="btn-dark">Send</button>
+      </form>
+
+      <div id="confirm" class="sheet confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-prompt" hidden>
+        <p class="confirm-title" id="confirm-title">Confirm</p>
+        <p class="confirm-prompt" id="confirm-prompt"></p>
+        <div class="confirm-buttons">
+          <button type="button" id="confirm-yes" class="answer answer--yes">Yes</button>
+          <button type="button" id="confirm-no" class="answer answer--no">No</button>
+        </div>
+      </div>
     </div>
+
+    <div id="announce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+    <div id="status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
