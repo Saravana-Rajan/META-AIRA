@@ -2,7 +2,7 @@ import "./style.css";
 import { unlockAudio } from "./audio";
 import { Camera } from "./camera";
 import { DeviceCheck } from "./check";
-import { Connection, loadAppKey, resolveWsUrl, type ConnState } from "./connection";
+import { Connection, fetchServerKey, loadAppKey, resolveWsUrl, type ConnState } from "./connection";
 import type { Confirm, Count, Inbound, State } from "./contracts";
 import { cue } from "./cues";
 import { attachGestures } from "./gestures";
@@ -87,7 +87,13 @@ function saveSettings(): void {
 }
 
 // ---- state -----------------------------------------------------------------
-const appKey = loadAppKey(); // strips ?key= from the URL before anything else
+let appKey = loadAppKey(); // strips ?key= from the URL before anything else
+// No stored key: fetch the shared demo key from the backend (it lives only in Cloud Run).
+const keyReady: Promise<void> = appKey
+  ? Promise.resolve()
+  : fetchServerKey(resolveWsUrl()).then((k) => {
+      appKey = k;
+    });
 let lang: Lang = loadLang();
 const settings = loadSettings();
 let started = false;
@@ -611,7 +617,7 @@ startBtn.addEventListener("click", () => {
   started = true;
   unlockMedia();
   if (startOrb) setLevel(startOrb, 0);
-  conn.connect();
+  void keyReady.then(() => conn.connect());
   welcome.hidden = true;
   checkScreen.hidden = false;
   window.scrollTo(0, 0);

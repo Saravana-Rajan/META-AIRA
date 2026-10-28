@@ -223,6 +223,14 @@ def create_app(
             st.hub.sessions.discard(session)
             await session.close()
 
+    @app.get("/api/client-config")
+    async def client_config(request: Request) -> dict:
+        """Config the web apps load at startup. The app key is the shared demo key (as in the original
+        AIRA it is public to anyone who opens the app); it lives only in Cloud Run / Secret Manager,
+        never in GitHub or a build. Model spend is capped server-side by aira.limits."""
+        s: Settings = request.app.state.settings
+        return {"app_key": s.app_key, "mock": s.mock}
+
     @app.get("/api/snapshot", dependencies=[Depends(check_key)])
     async def snapshot(request: Request) -> dict:
         st = request.app.state

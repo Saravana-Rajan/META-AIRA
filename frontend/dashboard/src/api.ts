@@ -29,13 +29,22 @@ const KEY_STORE = 'aira.dashboard.key';
 let appKey = '';
 
 /**
- * The shared demo key, as in the original AIRA: built in at deploy time as VITE_AIRA_APP_KEY so
- * the plain dashboard URL works (it is visible to anyone who opens the page). A `?key=` link
- * overrides it (persisted, stripped from the address bar). Empty for a local mock backend.
+ * The shared demo key (as in the original AIRA, the plain dashboard URL just works). It lives only
+ * in Cloud Run and is fetched from the trusted backend's /api/client-config, never from GitHub or
+ * the bundle. A `?key=` link overrides it (persisted, stripped from the address bar).
  */
-export function initKey(): void {
+export async function initKey(): Promise<void> {
   loadStoredKey();
-  if (!appKey) appKey = (import.meta.env.VITE_AIRA_APP_KEY ?? '').trim();
+  if (appKey) return;
+  try {
+    const r = await fetch(`${trustedBase()}/api/client-config`, { cache: 'no-store' });
+    if (r.ok) {
+      const body = (await r.json()) as { app_key?: unknown };
+      if (typeof body.app_key === 'string') appKey = body.app_key;
+    }
+  } catch {
+    /* offline: requests go without a key and the stream retries */
+  }
 }
 
 function loadStoredKey(): void {

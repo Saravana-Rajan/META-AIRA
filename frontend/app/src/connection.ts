@@ -31,17 +31,25 @@ export function resolveWsUrl(): string {
 const KEY_STORAGE = "aira.key";
 
 /**
- * The shared demo key, as in the original AIRA: built in at deploy time as VITE_AIRA_APP_KEY so
- * the plain URL works. It is not a secret from anyone who opens the page; it only keeps scripts
- * that never load the app from calling the backend, and the backend caps each session's turns.
+ * The shared demo key (as in the original AIRA, the plain URL just works). It lives only in Cloud
+ * Run and is fetched from the configured backend's /api/client-config at startup, so it is never
+ * in GitHub or the bundle; the backend caps model spend per caller.
  * A `?key=` link overrides it (kept in localStorage, stripped from the address bar).
- * Call once at startup, before anything else reads the URL.
  */
-export function loadAppKey(): string {
-  return loadStoredKey() || (import.meta.env.VITE_AIRA_APP_KEY as string | undefined)?.trim() || "";
+export async function fetchServerKey(wsUrl: string): Promise<string> {
+  const base = wsUrl.replace(/^ws/, "http").replace(/\/ws\/?$/, "");
+  try {
+    const r = await fetch(`${base}/api/client-config`, { cache: "no-store" });
+    if (!r.ok) return "";
+    const body = (await r.json()) as { app_key?: unknown };
+    return typeof body.app_key === "string" ? body.app_key : "";
+  } catch {
+    return ""; // offline: hello goes without a key and the connection retries
+  }
 }
 
-function loadStoredKey(): string {
+/** A `?key=` override or a previously stored one. Call once at startup, before anything else reads the URL. */
+export function loadAppKey(): string {
   const url = new URL(location.href);
   const fromUrl = url.searchParams.get("key");
   if (fromUrl !== null) {

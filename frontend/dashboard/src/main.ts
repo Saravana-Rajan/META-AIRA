@@ -14,7 +14,10 @@ if (demo) {
   app.setStatus('demo');
   startDemo(app);
 } else {
-  initKey();
+  void initKey().then(startLive);
+}
+
+function startLive(): void {
   const base = resolveBase();
   let refreshTimer: number | null = null;
   let inflight: AbortController | null = null;
