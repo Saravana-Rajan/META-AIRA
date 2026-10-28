@@ -31,11 +31,17 @@ export function resolveWsUrl(): string {
 const KEY_STORAGE = "aira.key";
 
 /**
- * The app key is never baked into the bundle. It is read once from `?key=`, kept in
- * localStorage, and stripped from the address bar (and history) with replaceState.
+ * The shared demo key, as in the original AIRA: built in at deploy time as VITE_AIRA_APP_KEY so
+ * the plain URL works. It is not a secret from anyone who opens the page; it only keeps scripts
+ * that never load the app from calling the backend, and the backend caps each session's turns.
+ * A `?key=` link overrides it (kept in localStorage, stripped from the address bar).
  * Call once at startup, before anything else reads the URL.
  */
 export function loadAppKey(): string {
+  return loadStoredKey() || (import.meta.env.VITE_AIRA_APP_KEY as string | undefined)?.trim() || "";
+}
+
+function loadStoredKey(): string {
   const url = new URL(location.href);
   const fromUrl = url.searchParams.get("key");
   if (fromUrl !== null) {

@@ -29,10 +29,16 @@ const KEY_STORE = 'aira.dashboard.key';
 let appKey = '';
 
 /**
- * Read the app key from ?key= once, persist it in localStorage and strip it from the
- * address bar. Never baked into the bundle. Empty when the backend has no key (local mock).
+ * The shared demo key, as in the original AIRA: built in at deploy time as VITE_AIRA_APP_KEY so
+ * the plain dashboard URL works (it is visible to anyone who opens the page). A `?key=` link
+ * overrides it (persisted, stripped from the address bar). Empty for a local mock backend.
  */
 export function initKey(): void {
+  loadStoredKey();
+  if (!appKey) appKey = (import.meta.env.VITE_AIRA_APP_KEY ?? '').trim();
+}
+
+function loadStoredKey(): void {
   const url = new URL(location.href);
   const q = url.searchParams.get('key');
   if (q !== null) {

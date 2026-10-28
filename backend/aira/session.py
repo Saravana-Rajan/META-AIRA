@@ -6,6 +6,7 @@ import binascii
 import contextlib
 import hmac
 import logging
+import time
 import uuid
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -20,6 +21,11 @@ from aira.tools.base import FrameData, ToolContext
 log = logging.getLogger(__name__)
 
 SORRY = "Sorry, something went wrong. Please say that again."
+RATE_LIMITED = "I need a short pause. Please try again in a minute."
+
+MAX_TEXT_CHARS = 500
+MAX_TURNS_PER_MINUTE = 20
+MAX_TURNS_PER_SESSION = 300
 FRAME_TIMEOUT_S = 8.0
 
 WsSend = Callable[[dict], Awaitable[None]]
@@ -93,6 +99,8 @@ class Session:
         self.transcriber: Any = None
 
         self._queue: asyncio.Queue[str] = asyncio.Queue()
+        self._turn_times: list[float] = []
+        self._turns_total = 0
         self._worker: asyncio.Task | None = None
         self._turn: asyncio.Task | None = None
         self._tasks: set[asyncio.Task] = set()
@@ -216,9 +224,17 @@ class Session:
             self._worker = asyncio.create_task(self._work())
 
     async def on_user_text(self, text: str) -> None:
-        text = (text or "").strip()
+        text = (text or "").strip()[:MAX_TEXT_CHARS]
         if not text or self.closed:
             return
+        # The app key is public (built into the web app), so each session's model spend is capped.
+        now = time.monotonic()
+        self._turn_times = [t for t in self._turn_times if now - t < 60]
+        if len(self._turn_times) >= MAX_TURNS_PER_MINUTE or self._turns_total >= MAX_TURNS_PER_SESSION:
+            await self.send(c.Error(code="rate_limited", say=RATE_LIMITED))
+            return
+        self._turn_times.append(now)
+        self._turns_total += 1
         self._ensure_agent()
         await self._queue.put(text)
 
