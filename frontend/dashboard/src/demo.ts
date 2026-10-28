@@ -123,7 +123,7 @@ type Step = [delayMs: number, run: () => void];
 export function startDemo(sink: DemoSink): void {
   let seq = 0;
   let saleNo = 1040;
-  let delNo = 7;
+  let delNo = 7; // D-007 is the seeded delivery below
   let confirmNo = 1;
   let frameNo = 1;
   const now = Date.now();
@@ -273,6 +273,7 @@ export function startDemo(sink: DemoSink): void {
   const fid0 = `demo-frame-${frameNo++}`;
   const b0 = makeFrame(fid0, 12, 'can');
   emit('count', { sku: 'TB-06', counted: 12, expected: 12, boxes: b0, frame_id: fid0, w: 1280, h: 960, ts: now - 40 * 60e3 });
+  emit('delivery', { id: 'D-007', sku: 'TB-06', expected: 12, counted: 12, state: 'committed', discrepancy: 0, ts: now - 38 * 60e3 });
   emit('verification', { type: 'invoice', agreed: true, total: 3000, readers: [
     { model: READER_A, total: 3000, supplier: 'Meerut Cricket Works' },
     { model: READER_B, total: 3000, supplier: 'Meerut Cricket Works' },
