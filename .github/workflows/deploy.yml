@@ -1,0 +1,101 @@
+name: deploy
+
+# Every push to main: test, then deploy the backend to Cloud Run "meta-aira" and both web apps to
+# Firebase Hosting site "meta-aira". Keyless: GitHub OIDC -> Workload Identity pool "meta-aira-github"
+# (trusts only Saravana-Rajan/META-AIRA on refs/heads/main) -> service account meta-aira-deployer.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+# Read-only by default; only the deploy job asks for an OIDC token.
+permissions:
+  contents: read
+
+env:
+  PROJECT: gemini-enterprise-475109
+  REGION: asia-south1
+  SERVICE: meta-aira
+  IMAGE: asia-south1-docker.pkg.dev/gemini-enterprise-475109/meta-aira/meta-aira
+  WIF_PROVIDER: projects/437288066659/locations/global/workloadIdentityPools/meta-aira-github/providers/meta-aira-repo
+  DEPLOYER: meta-aira-deployer@gemini-enterprise-475109.iam.gserviceaccount.com
+  RUNTIME_SA: meta-aira-run@gemini-enterprise-475109.iam.gserviceaccount.com
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - name: Backend tests (mock mode, no secrets)
+        working-directory: backend
+        env:
+          AIRA_MOCK: "1"
+        run: |
+          uv sync
+          uv run ruff check aira tests
+          uv run pytest -q
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Build web apps
+        run: |
+          (cd frontend/app && npm ci && npm run build)
+          (cd frontend/dashboard && npm ci && npm run build)
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - id: auth
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOYER }}
+
+      - uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2
+
+      - name: Build and push backend image
+        run: |
+          gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
+          docker build -t "$IMAGE:$GITHUB_SHA" backend
+          docker push "$IMAGE:$GITHUB_SHA"
+
+      - name: Deploy Cloud Run meta-aira (same settings as aira-live)
+        run: |
+          gcloud run deploy "$SERVICE" --project="$PROJECT" --region="$REGION" \
+            --image="$IMAGE:$GITHUB_SHA" --service-account="$RUNTIME_SA" \
+            --env-vars-file=infra/cloudrun.env.yaml \
+            --set-secrets=MODEL_API_KEY=meta-aira-model-api-key:latest,APP_KEY=meta-aira-app-key:latest \
+            --cpu=1 --memory=512Mi --concurrency=80 --timeout=3600 \
+            --min-instances=0 --max-instances=1 --session-affinity --cpu-throttling --no-cpu-boost \
+            --ingress=all --port=8080 --allow-unauthenticated --labels=app=meta-aira --quiet
+          echo "URL=$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format='value(status.url)')" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Build web apps against the deployed backend
+        run: |
+          WS="wss://${URL#https://}/ws"
+          (cd frontend/app && npm ci && VITE_BACKEND_WS="$WS" npx vite build --outDir ../../infra/dist --emptyOutDir)
+          (cd frontend/dashboard && npm ci && VITE_BACKEND_URL="$URL" npx vite build --outDir ../../infra/dist/dashboard --emptyOutDir)
+
+      - name: Deploy to Firebase Hosting site meta-aira
+        run: HOSTING_TOKEN="$(gcloud auth print-access-token)" python3 infra/hosting_deploy.py infra/dist
+
+      - name: Smoke test
+        run: |
+          curl -fsS "$URL/health"
+          curl -fsS -o /dev/null https://meta-aira.web.app/
+          curl -fsS -o /dev/null https://meta-aira.web.app/dashboard/

@@ -1,0 +1,213 @@
+{
+  "shop": {
+    "id": "aira-cricket",
+    "name": "AIRA Cricket Store",
+    "city": "Coimbatore",
+    "state": "Tamil Nadu",
+    "currency": "INR",
+    "languages": ["ta", "en", "hi"],
+    "timezone": "Asia/Kolkata"
+  },
+  "products": [
+    {
+      "sku": "TB-01",
+      "name": "tennis ball",
+      "brand": "Cosco",
+      "unit": "piece",
+      "price": 60,
+      "cost_price": 42,
+      "reorder_threshold": 12,
+      "aliases": {
+        "en": ["tennis ball", "tennis cricket ball", "soft ball", "yellow ball"],
+        "ta": ["டென்னிஸ் பந்து", "டென்னிஸ் பால்", "tennis pandhu", "tennis pandu", "manjal pandhu"],
+        "hi": ["टेनिस बॉल", "टेनिस गेंद", "tennis gend", "peeli gend"]
+      },
+      "look": "Bright fluorescent yellow felt ball with a white curved seam line, about the size of a fist.",
+      "sam_noun": "tennis ball",
+      "active": true
+    },
+    {
+      "sku": "TB-06",
+      "name": "tennis ball pack of 6",
+      "brand": "Cosco",
+      "unit": "pack",
+      "price": 330,
+      "cost_price": 230,
+      "reorder_threshold": 4,
+      "aliases": {
+        "en": ["ball pack", "pack of 6", "six ball pack", "tennis ball pack", "half dozen balls"],
+        "ta": ["ஆறு பந்து பாக்கெட்", "பந்து பாக்கெட்", "aaru pandhu packet", "pandhu packet"],
+        "hi": ["छह गेंद पैक", "गेंद का पैक", "chhe gend pack", "gend ka packet"]
+      },
+      "look": "Clear plastic tube or cardboard box holding six yellow tennis balls, Cosco logo printed on the side.",
+      "sam_noun": "pack of tennis balls",
+      "active": true
+    },
+    {
+      "sku": "LB-01",
+      "name": "leather ball",
+      "brand": "SG",
+      "unit": "piece",
+      "price": 450,
+      "cost_price": 320,
+      "reorder_threshold": 5,
+      "aliases": {
+        "en": ["leather ball", "cricket ball", "red ball", "season ball", "hard ball"],
+        "ta": ["லெதர் பந்து", "சிவப்பு பந்து", "தோல் பந்து", "leather pandhu", "sivappu pandhu"],
+        "hi": ["लेदर बॉल", "चमड़े की गेंद", "लाल गेंद", "chamde ki gend", "laal gend"]
+      },
+      "look": "Hard shiny cherry-red leather ball with a raised white stitched seam around the middle, gold SG stamp.",
+      "sam_noun": "red cricket ball",
+      "active": true
+    },
+    {
+      "sku": "BAT-KW",
+      "name": "kashmir willow bat",
+      "brand": "SS",
+      "unit": "piece",
+      "price": 1800,
+      "cost_price": 1250,
+      "reorder_threshold": 3,
+      "aliases": {
+        "en": ["kashmir willow bat", "kashmir bat", "kashmir willow", "tennis bat", "practice bat"],
+        "ta": ["காஷ்மீர் மட்டை", "காஷ்மீர் பேட்", "kashmir mattai", "kashmir bat"],
+        "hi": ["कश्मीर विलो बैट", "कश्मीरी बल्ला", "kashmiri balla", "kashmir balla"]
+      },
+      "look": "Full-size wooden cricket bat with a darker, slightly reddish-brown blade, black rubber grip and SS sticker.",
+      "sam_noun": "cricket bat",
+      "active": true
+    },
+    {
+      "sku": "BAT-EW",
+      "name": "english willow bat",
+      "brand": "SG",
+      "unit": "piece",
+      "price": 7500,
+      "cost_price": 5600,
+      "reorder_threshold": 2,
+      "aliases": {
+        "en": ["english willow bat", "english bat", "english willow", "leather ball bat", "match bat"],
+        "ta": ["இங்கிலீஷ் மட்டை", "இங்கிலீஷ் வில்லோ பேட்", "english mattai", "english willow mattai"],
+        "hi": ["इंग्लिश विलो बैट", "इंग्लिश बल्ला", "english balla", "angrezi balla"]
+      },
+      "look": "Full-size cricket bat with a pale cream-white blade showing straight grain lines, red grip and SG sticker.",
+      "sam_noun": "cricket bat",
+      "active": true
+    },
+    {
+      "sku": "GLV-01",
+      "name": "batting gloves",
+      "brand": "SG",
+      "unit": "set",
+      "price": 1200,
+      "cost_price": 850,
+      "reorder_threshold": 3,
+      "aliases": {
+        "en": ["batting gloves", "gloves", "glove", "batting glove", "hand gloves"],
+        "ta": ["கையுறை", "பேட்டிங் கையுறை", "கிளவுஸ்", "kaiyurai", "gloves"],
+        "hi": ["दस्ताने", "बैटिंग दस्ताने", "ग्लव्स", "dastane", "gloves"]
+      },
+      "look": "A pair of white padded gloves with segmented finger rolls, green leather palms and a velcro wrist strap.",
+      "sam_noun": "batting glove",
+      "active": true
+    },
+    {
+      "sku": "PAD-01",
+      "name": "batting pads",
+      "brand": "SS",
+      "unit": "set",
+      "price": 1500,
+      "cost_price": 1050,
+      "reorder_threshold": 2,
+      "aliases": {
+        "en": ["batting pads", "pads", "pad", "leg pads", "leg guard"],
+        "ta": ["பேட்ஸ்", "கால் கவசம்", "kaal kavasam", "pads"],
+        "hi": ["पैड", "बैटिंग पैड", "लेग गार्ड", "pad", "leg guard"]
+      },
+      "look": "A pair of tall white leg guards with vertical padded canes, knee roll and three black velcro straps each.",
+      "sam_noun": "batting pad",
+      "active": true
+    },
+    {
+      "sku": "HLM-01",
+      "name": "helmet",
+      "brand": "Shrey",
+      "unit": "piece",
+      "price": 2200,
+      "cost_price": 1600,
+      "reorder_threshold": 2,
+      "aliases": {
+        "en": ["helmet", "cricket helmet", "batting helmet", "head guard"],
+        "ta": ["ஹெல்மெட்", "தலைக்கவசம்", "thalai kavasam", "helmet"],
+        "hi": ["हेलमेट", "क्रिकेट हेलमेट", "helmet", "sir ka guard"]
+      },
+      "look": "Navy blue hard-shell helmet with a steel face grille in front and a chin strap, Shrey logo on the side.",
+      "sam_noun": "cricket helmet",
+      "active": true
+    },
+    {
+      "sku": "STM-01",
+      "name": "stumps set",
+      "brand": "BDM",
+      "unit": "set",
+      "price": 950,
+      "cost_price": 650,
+      "reorder_threshold": 2,
+      "aliases": {
+        "en": ["stumps set", "stumps", "stump", "wickets", "wicket set"],
+        "ta": ["ஸ்டம்ப்", "ஸ்டம்ப் செட்", "விக்கெட்", "stump set", "wicket"],
+        "hi": ["स्टंप", "विकेट", "स्टंप सेट", "wicket", "stump"]
+      },
+      "look": "Three pointed light-wood stumps and two small bails bundled together, with a spring stand base.",
+      "sam_noun": "cricket stump",
+      "active": true
+    },
+    {
+      "sku": "GRP-01",
+      "name": "bat grip",
+      "brand": "SS",
+      "unit": "piece",
+      "price": 120,
+      "cost_price": 70,
+      "reorder_threshold": 10,
+      "aliases": {
+        "en": ["bat grip", "grip", "handle grip", "rubber grip"],
+        "ta": ["கிரிப்", "பேட் கிரிப்", "மட்டை பிடி", "mattai pidi", "grip"],
+        "hi": ["ग्रिप", "बैट ग्रिप", "हैंडल ग्रिप", "grip", "balle ki grip"]
+      },
+      "look": "Rolled rubber tube with a textured zig-zag pattern, sold flat in a thin plastic sleeve; usually red or black.",
+      "sam_noun": "rubber bat grip",
+      "active": true
+    }
+  ],
+  "inventory": {
+    "TB-01": 40,
+    "TB-06": 10,
+    "LB-01": 15,
+    "BAT-KW": 8,
+    "BAT-EW": 4,
+    "GLV-01": 6,
+    "PAD-01": 5,
+    "HLM-01": 4,
+    "STM-01": 6,
+    "GRP-01": 25
+  },
+  "suppliers": [
+    {
+      "id": "SUP-KOVAI",
+      "name": "Kovai Sports Distributors",
+      "city": "Coimbatore",
+      "phone": "+91 90000 11111",
+      "skus": ["TB-01", "TB-06", "LB-01", "GRP-01", "STM-01"],
+      "lead_days": 2
+    },
+    {
+      "id": "SUP-MEERUT",
+      "name": "Meerut Cricket Works",
+      "city": "Meerut",
+      "phone": "+91 90000 22222",
+      "skus": ["BAT-KW", "BAT-EW", "GLV-01", "PAD-01", "HLM-01"],
+      "lead_days": 7
+    }
+  ]
+}

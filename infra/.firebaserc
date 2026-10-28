@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "gemini-enterprise-475109"
+  },
+  "targets": {
+    "gemini-enterprise-475109": {
+      "hosting": {
+        "meta-aira": ["meta-aira"]
+      }
+    }
+  }
+}
