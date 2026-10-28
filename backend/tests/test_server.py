@@ -314,8 +314,27 @@ def test_app_key():
         with tc.websocket_connect("/ws") as ws:
             hello(ws, key="sekret")
         assert tc.get("/api/snapshot").status_code == 401
-        assert tc.get("/api/snapshot?key=sekret").status_code == 200
+        # The key travels in a header; a query-string key is refused except where browsers can't send headers.
+        assert tc.get("/api/snapshot?key=sekret").status_code == 401
+        assert tc.get("/api/snapshot", headers={"x-aira-key": "sekret"}).status_code == 200
+        assert tc.get("/api/frame/nope?key=sekret").status_code == 404  # accepted, then not found
         assert tc.get("/health").status_code == 200
+
+
+def test_fails_closed_without_key_outside_mock():
+    app = create_app(
+        settings=Settings(aira_mock=False, app_key="", model_api_key="LLM_x"),
+        store=FakeStore(),
+        confirms=FakeConfirms(),
+        agent_factory=FakeAgent,
+        transcriber_factory=FakeTranscriber,
+        hub=Hub(EventBus()),
+    )
+    with TestClient(app) as tc:
+        assert tc.get("/api/snapshot").status_code == 503
+        with tc.websocket_connect("/ws") as ws:
+            ws.send_json({"type": "hello", "key": ""})
+            assert ws.receive_json()["code"] == "unauthorized"
 
 
 def test_events_poll(client):

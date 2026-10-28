@@ -4,6 +4,7 @@ import asyncio
 import base64
 import binascii
 import contextlib
+import hmac
 import logging
 import uuid
 from collections.abc import Awaitable, Callable
@@ -78,7 +79,7 @@ class Session:
         self._transcriber_factory = transcriber_factory or default_transcriber_factory
         self._send_lock = asyncio.Lock()
 
-        self.authed = not settings.app_key
+        self.authed = False  # until a valid hello; see _on_hello
         self.lang = "en"
         self.ctx = ToolContext(
             session_id=self.session_id,
@@ -151,7 +152,10 @@ class Session:
             await self._on_stop()
 
     async def _on_hello(self, msg: c.Hello) -> None:
-        if self.settings.app_key and msg.key != self.settings.app_key:
+        key = self.settings.app_key
+        # Fail closed: outside mock mode a key must be configured and match.
+        allowed = hmac.compare_digest(msg.key.encode(), key.encode()) if key else self.settings.mock
+        if not allowed:
             await self.send(c.Error(code="unauthorized", say="This app is not allowed to connect."))
             raise SessionClosed(1008, "unauthorized")
         self.authed = True

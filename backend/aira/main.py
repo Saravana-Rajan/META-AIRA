@@ -1,6 +1,7 @@
 """FastAPI app: phone WebSocket, dashboard REST + SSE, health."""
 
 import asyncio
+import hmac
 import json
 import logging
 import time
@@ -134,8 +135,20 @@ def create_app(
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
     def check_key(request: Request) -> None:
-        key = request.app.state.settings.app_key
-        if key and key not in (request.query_params.get("key"), request.headers.get("x-aira-key")):
+        """Fail closed: outside mock mode an app key must be configured and presented.
+
+        The key is read from the X-Aira-Key header. Only routes a browser cannot add headers to
+        (EventSource SSE and <img> frames) also accept ?key=.
+        """
+        s: Settings = request.app.state.settings
+        if not s.app_key:
+            if s.mock:
+                return
+            raise HTTPException(status_code=503, detail="server not configured: APP_KEY missing")
+        provided = request.headers.get("x-aira-key") or ""
+        if not provided and request.url.path.startswith(("/api/stream", "/api/frame/")):
+            provided = request.query_params.get("key") or ""
+        if not hmac.compare_digest(provided.encode(), s.app_key.encode()):
             raise HTTPException(status_code=401, detail="bad key")
 
     @app.get("/health")
