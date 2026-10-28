@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>AIRA · Live shop</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230081FB'/%3E%3Ctext x='16' y='22' font-size='18' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">A</div>
+          <div>
+            <h1>AIRA <span>· Live shop</span></h1>
+            <div class="tagline">Voice-first assistant for a blind shop owner</div>
+          </div>
+        </div>
+        <div class="status">
+          <span id="live" class="live connecting" role="status"><i></i><b>CONNECTING</b></span>
+          <span id="mock" class="badge mock" hidden>MOCK MODE</span>
+          <span id="clock" class="clock"></span>
+        </div>
+        <div class="chips" aria-label="Powered by Meta models">
+          <span class="chips-label">Powered by Meta</span>
+          <span class="chip">Muse Spark</span>
+          <span class="chip">Voice Transcribe</span>
+          <span class="chip">SAM 3.1</span>
+          <span class="chip">Glimmer</span>
+        </div>
+      </header>
+
+      <section class="kpis">
+        <div class="kpi">
+          <div class="klabel">Today’s revenue</div>
+          <div class="kval" id="k-revenue">₹0</div>
+          <div class="ksub" id="k-revenue-sub"></div>
+        </div>
+        <div class="kpi">
+          <div class="klabel">Sales</div>
+          <div class="kval" id="k-sales">0</div>
+          <div class="ksub" id="k-sales-sub"></div>
+        </div>
+        <div class="kpi">
+          <div class="klabel">Items sold</div>
+          <div class="kval" id="k-items">0</div>
+          <div class="ksub" id="k-items-sub"></div>
+        </div>
+        <div class="kpi pending" id="k-pending-card">
+          <div class="klabel"><i class="dot"></i>Pending confirmations</div>
+          <div class="kval" id="k-pending">0</div>
+          <div class="ksub" id="k-pending-sub"></div>
+        </div>
+      </section>
+
+      <main class="grid">
+        <section class="panel convo">
+          <div class="phead">
+            <h2>Live conversation</h2>
+            <span class="pmeta">Muse Voice Transcribe → Muse Spark</span>
+          </div>
+          <div id="feed" class="feed" aria-live="polite"></div>
+        </section>
+
+        <section class="panel count" id="count-panel">
+          <div class="phead">
+            <h2>SAM 3.1 count</h2>
+            <span class="pmeta">segment &amp; count every item</span>
+          </div>
+          <div class="frame-wrap" id="frame-wrap">
+            <img id="frame-img" alt="Last counted camera frame" />
+            <canvas id="frame-canvas"></canvas>
+            <div id="frame-empty" class="frame-empty">Waiting for a delivery count…</div>
+          </div>
+          <div id="count-result" class="count-result idle"></div>
+          <div id="deliveries" class="deliveries"></div>
+        </section>
+
+        <section class="panel verify">
+          <div class="phead">
+            <h2>Two-model verification</h2>
+            <span class="pmeta" id="verif-meta"></span>
+          </div>
+          <div id="verifs" class="verifs"></div>
+        </section>
+
+        <section class="panel stock">
+          <div class="phead">
+            <h2>Stock</h2>
+            <span class="pmeta" id="stock-meta"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Product</th><th class="num">Price</th><th class="num">On hand</th><th class="barcol"></th><th></th></tr>
+              </thead>
+              <tbody id="stock-body"></tbody>
+            </table>
+            <div id="stock-empty" class="empty-note">Loading catalog…</div>
+          </div>
+        </section>
+
+        <section class="panel sales">
+          <div class="phead">
+            <h2>Recent sales</h2>
+          </div>
+          <div id="sales-list" class="sales-list"></div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
