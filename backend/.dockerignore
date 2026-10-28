@@ -1,0 +1,16 @@
+# Keep the build context small: only pyproject.toml, uv.lock and aira/ are needed.
+.venv/
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+tests/
+.env
+.env.*
+*.log
+.DS_Store
+.git
+Dockerfile
+.dockerignore
+INTERFACES.md

@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (ruff + pytest, mock mode)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      AIRA_MOCK: "1"        # no model calls, no secrets, nothing billed
+      STORE: memory
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install Python 3.12
+        run: uv python install 3.12
+      - name: Sync dependencies
+        run: |
+          if [ -f uv.lock ]; then uv sync --frozen; else uv sync; fi
+      - name: Ruff
+        run: uv run ruff check .
+      - name: Pytest
+        run: uv run pytest -q
+
+  frontend:
+    name: Frontend build (${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: [frontend/app, frontend/dashboard]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for package.json
+        id: check
+        run: |
+          if [ -f "${{ matrix.dir }}/package.json" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::${{ matrix.dir }}/package.json not found, skipping."
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.present == 'true'
+        with:
+          node-version: 22
+      - name: Install
+        if: steps.check.outputs.present == 'true'
+        working-directory: ${{ matrix.dir }}
+        run: npm ci || npm install
+      - name: Build
+        if: steps.check.outputs.present == 'true'
+        working-directory: ${{ matrix.dir }}
+        env:
+          VITE_BACKEND_URL: http://localhost:8080
+          VITE_BACKEND_WS: ws://localhost:8080/ws
+        run: npm run build
