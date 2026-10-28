@@ -75,6 +75,7 @@ jobs:
           gcloud run deploy "$SERVICE" --project="$PROJECT" --region="$REGION" \
             --image="$IMAGE:$GITHUB_SHA" --service-account="$RUNTIME_SA" \
             --env-vars-file=infra/cloudrun.env.yaml \
+            --set-secrets=MODEL_API_KEY=meta-aira-model-api-key:latest,APP_KEY=meta-aira-app-key:latest \
             --cpu=1 --memory=512Mi --concurrency=80 --timeout=3600 \
             --min-instances=0 --max-instances=1 --session-affinity --cpu-throttling --no-cpu-boost \
             --ingress=all --port=8080 --allow-unauthenticated --labels=app=meta-aira --quiet
