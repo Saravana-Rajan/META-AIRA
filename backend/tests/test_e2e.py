@@ -79,6 +79,10 @@ async def test_full_demo_sale_and_delivery(app_and_store):
         say(ws, "yes")
         assert await store.stock("TB-01") == start_balls - 2 + 10
 
+        verifications = [e for e in await store.events() if e["kind"] == "verification"]
+        assert verifications and verifications[0]["data"]["type"] == "cash"
+        assert verifications[0]["data"]["agreed"] is True and verifications[0]["data"]["total"] == 500
+
         snap = tc.get("/api/snapshot").json()
         assert snap["last_count"]["counted"] == 10
         assert any(s.get("state") == "SALE_COMPLETED" for s in snap["sales"])

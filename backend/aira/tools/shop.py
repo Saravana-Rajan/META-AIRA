@@ -11,7 +11,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from aira.contracts import State
-from aira.tools.base import Tool, ToolContext, err, no_results, obj, ok
+from aira.tools.base import Tool, ToolContext, emit_verification, err, no_results, obj, ok
 
 ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 MAX_QTY = 500
@@ -250,6 +250,10 @@ async def sale_pay(ctx: ToolContext, sale_id: str = "", method: str = "cash") ->
         from aira.vision.cash import read_cash  # lazy: vision module is optional at import time
 
         reading = await read_cash(frame)
+        breakdown = " + ".join(f"{c}×₹{d}" for d, c in sorted((reading.notes or {}).items(), reverse=True))
+        await emit_verification(
+            ctx, "cash", agreed=reading.agreed, total=reading.total, detail=breakdown, note=reading.hint or ""
+        )
         if not reading.agreed or reading.total is None:
             hint = reading.hint or "Spread the notes flat and show them again."
             return no_results(f"I could not read the cash clearly. {hint}", hint=hint, **facts)

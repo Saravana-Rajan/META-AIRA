@@ -1,4 +1,5 @@
 """Tool interface shared by every shop tool and the agent loop."""
+
 import hashlib
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
@@ -57,6 +58,27 @@ class Tool:
             "type": "function",
             "function": {"name": self.name, "description": self.description, "parameters": self.parameters},
         }
+
+
+async def emit_verification(
+    ctx: ToolContext, kind: str, *, agreed: bool, total: int | None, detail: str = "", note: str = ""
+) -> None:
+    """Publish a two-model reading to the dashboard's verification log (never blocks the tool)."""
+    from aira.config import get_settings
+
+    s = get_settings()
+    value = "agree" if agreed else "disagree"
+    readers = [
+        {"name": s.model_for("read"), "value": value, "detail": detail},
+        {"name": s.model_for("verify"), "value": value, "detail": detail},
+    ]
+    try:
+        await ctx.store.add_event(
+            "verification",
+            {"type": kind, "agreed": agreed, "total": total, "readers": readers, "note": note},
+        )
+    except Exception:  # the dashboard is best-effort; the reading itself already happened
+        pass
 
 
 def ok(say_en: str = "", **facts: Any) -> dict:

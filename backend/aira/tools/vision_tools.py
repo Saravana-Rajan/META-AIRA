@@ -1,6 +1,7 @@
 """Camera tools: generic look, two-reader invoice read, and SAM-counted delivery check."""
+
 from aira import contracts
-from aira.tools.base import Tool, ToolContext, err, no_results, obj, ok
+from aira.tools.base import Tool, ToolContext, emit_verification, err, no_results, obj, ok
 from aira.vision import invoice as invoice_mod
 from aira.vision import look as look_mod
 from aira.vision import sam as sam_mod
@@ -28,6 +29,14 @@ async def invoice_read(ctx: ToolContext) -> dict:
     if frame is None:
         return err(NO_FRAME, retryable=True)
     r = await invoice_mod.read_invoice(frame)
+    await emit_verification(
+        ctx,
+        "invoice",
+        agreed=r.agreed,
+        total=r.total if r.agreed else None,
+        detail=r.supplier or "",
+        note="; ".join(r.disagreements),
+    )
     if not r.agreed:
         return no_results(
             "I could not read this invoice reliably, so I will not use it. "
@@ -65,9 +74,7 @@ async def delivery_check(ctx: ToolContext, product: str, expected: int | None = 
         return err(NO_FRAME, retryable=True)
     sc = await sam_mod.count_items(frame, p.get("sam_noun") or name)
     if not sc.ok:
-        return err(
-            "The counting model did not answer. Please show the items again.", retryable=True, sku=sku
-        )
+        return err("The counting model did not answer. Please show the items again.", retryable=True, sku=sku)
     counted = sc.count
     await ctx.send(
         contracts.Count(sku=sku, counted=counted, expected=expected, boxes=sc.boxes, frame_id=frame.id)
