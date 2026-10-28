@@ -48,6 +48,14 @@ export async function fetchServerKey(wsUrl: string): Promise<string> {
   }
 }
 
+export function clearStoredKey(): void {
+  try {
+    localStorage.removeItem(KEY_STORAGE);
+  } catch {
+    /* storage blocked: nothing stored */
+  }
+}
+
 /** A `?key=` override or a previously stored one. Call once at startup, before anything else reads the URL. */
 export function loadAppKey(): string {
   const url = new URL(location.href);

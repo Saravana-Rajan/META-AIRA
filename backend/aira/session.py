@@ -167,6 +167,7 @@ class Session:
         # Fail closed: outside mock mode a key must be configured and match.
         allowed = hmac.compare_digest(msg.key.encode(), key.encode()) if key else self.settings.mock
         if not allowed:
+            log.info("hello refused: %s key from %s", "wrong" if msg.key else "missing", self.client)
             await self.send(c.Error(code="unauthorized", say="This app is not allowed to connect."))
             raise SessionClosed(1008, "unauthorized")
         self.authed = True
