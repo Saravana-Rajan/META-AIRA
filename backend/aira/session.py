@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from aira import contracts as c
 from aira.config import Settings
 from aira.events import Hub
+from aira.limits import guard
 from aira.tools.base import FrameData, ToolContext
 
 log = logging.getLogger(__name__)
@@ -69,7 +70,9 @@ class Session:
         settings: Settings | None = None,
         hub: Hub | None = None,
         frame_timeout: float = FRAME_TIMEOUT_S,
+        client: str = "local",
     ):
+        self.client = client  # caller identity (IP) for the shared spend guard
         if settings is None:
             from aira.config import get_settings
 
@@ -230,7 +233,10 @@ class Session:
         # The app key is public (built into the web app), so each session's model spend is capped.
         now = time.monotonic()
         self._turn_times = [t for t in self._turn_times if now - t < 60]
-        if len(self._turn_times) >= MAX_TURNS_PER_MINUTE or self._turns_total >= MAX_TURNS_PER_SESSION:
+        over_session = (
+            len(self._turn_times) >= MAX_TURNS_PER_MINUTE or self._turns_total >= MAX_TURNS_PER_SESSION
+        )
+        if over_session or not guard.allow_turn(self.client):  # guard: shared across reconnects
             await self.send(c.Error(code="rate_limited", say=RATE_LIMITED))
             return
         self._turn_times.append(now)

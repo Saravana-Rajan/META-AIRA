@@ -1,7 +1,7 @@
 """Tests never reach a real model: force mock mode and blank keys, whatever a local .env says."""
 import pytest
 
-from aira import config, meta_client
+from aira import config, limits, meta_client
 
 
 @pytest.fixture(autouse=True)
@@ -14,6 +14,7 @@ def _offline(monkeypatch):
     config.get_settings.cache_clear()
     meta_client.meta_client.cache_clear()
     meta_client.reader2_client.cache_clear()
+    limits.guard.__init__()  # fresh spend counters per test (the guard is a process-wide singleton)
     yield
     config.get_settings.cache_clear()
     meta_client.meta_client.cache_clear()

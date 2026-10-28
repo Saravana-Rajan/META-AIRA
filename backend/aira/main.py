@@ -17,6 +17,7 @@ from fastapi.responses import Response, StreamingResponse
 from aira import contracts as c
 from aira.config import Role, Settings, get_settings
 from aira.events import Hub
+from aira.limits import client_ip, guard
 from aira.session import AgentFactory, Session, SessionClosed, TranscriberFactory
 
 log = logging.getLogger(__name__)
@@ -160,7 +161,17 @@ def create_app(
 
     @app.websocket("/ws")
     async def ws_endpoint(ws: WebSocket) -> None:
-        await ws.accept()
+        client = client_ip(ws.headers, ws.client.host if ws.client else None)
+        if not guard.open_socket(client):  # cap simultaneous phones per caller
+            await ws.close(code=1013, reason="too many connections")
+            return
+        try:
+            await ws.accept()
+            await _serve(ws, client)
+        finally:
+            guard.close_socket(client)
+
+    async def _serve(ws: WebSocket, client: str) -> None:
         st = ws.app.state
 
         async def ws_send(data: dict) -> None:
@@ -177,6 +188,7 @@ def create_app(
             transcriber_factory=st.transcriber_factory,
             settings=st.settings,
             hub=st.hub,
+            client=client,
             **kwargs,
         )
         st.hub.sessions.add(session)
