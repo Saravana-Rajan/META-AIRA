@@ -46,6 +46,15 @@ class Settings(BaseSettings):
 
     # Shared secret between the phone app / dashboard and the backend (empty = open, for local dev).
     app_key: str = ""
+    # Browser origins allowed to call the API (the hosted web apps plus local Vite dev servers).
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "https://meta-aira.web.app",
+            "https://meta-aira.firebaseapp.com",
+            "http://localhost:5173",
+            "http://localhost:5174",
+        ]
+    )
 
     @property
     def mock(self) -> bool:

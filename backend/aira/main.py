@@ -135,7 +135,11 @@ def create_app(
             await s.close()
 
     app = FastAPI(title="AIRA", lifespan=lifespan)
-    app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+    # Only our own web apps may call the API from a browser (the demo key is public, see client_config).
+    origins = (settings or get_settings()).cors_origins
+    app.add_middleware(
+        CORSMiddleware, allow_origins=origins, allow_methods=["GET"], allow_headers=["x-aira-key"]
+    )
 
     def check_key(request: Request) -> None:
         """Fail closed: outside mock mode an app key must be configured and presented.
