@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="AIRA: voice-first shop assistant for blind shop owners" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="AIRA" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <title>AIRA</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="bar">
+        <div class="conn" id="conn">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="conn-text">Connecting</span>
+          <span id="mock" class="badge" hidden>Demo</span>
+        </div>
+        <label class="lang">
+          <span class="sr-only">Language</span>
+          <select id="lang">
+            <option value="en">English</option>
+            <option value="ta">தமிழ்</option>
+            <option value="hi">हिन्दी</option>
+          </select>
+        </label>
+      </header>
+
+      <button id="pad" class="pad" type="button" aria-label="AIRA. Double tap to talk. Long press to stop.">
+        <span class="pad-state" id="pad-state" aria-hidden="true">Double tap to talk</span>
+        <span class="pad-hint" id="pad-hint" aria-hidden="true">Double tap to talk. Long press to stop.</span>
+      </button>
+
+      <section class="captions" aria-label="Conversation">
+        <p class="cap cap-user" id="cap-user"></p>
+        <p class="cap cap-aira" id="cap-aira"></p>
+        <p class="cap-meta" id="cap-meta"></p>
+      </section>
+
+      <video id="cam" class="cam" aria-hidden="true" muted playsinline autoplay></video>
+
+      <details class="type" id="type">
+        <summary id="type-summary">Type instead</summary>
+        <form id="type-form" autocomplete="off">
+          <label for="type-input" class="sr-only">Message to AIRA</label>
+          <input id="type-input" type="text" enterkeyhint="send" />
+          <button type="submit" id="type-send">Send</button>
+        </form>
+      </details>
+
+      <div id="confirm" class="confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-prompt" hidden>
+        <h2 id="confirm-title">Confirm</h2>
+        <p id="confirm-prompt"></p>
+        <div class="confirm-buttons">
+          <button type="button" id="confirm-yes" class="yes">Yes</button>
+          <button type="button" id="confirm-no" class="no">No</button>
+        </div>
+      </div>
+
+      <div id="announce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+      <div id="status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
